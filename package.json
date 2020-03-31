@@ -1,0 +1,29 @@
+{
+  "name": "aws-api-read-stream",
+  "version": "1.0.0",
+  "description": "turns an aws api call into a readable stream",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ironsource/aws-api-read-stream.git"
+  },
+  "keywords": [
+    "aws",
+    "api",
+    "stream",
+    "readable"
+  ],
+  "author": "Yaniv Kessler",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ironsource/aws-api-read-stream/issues"
+  },
+  "homepage": "https://github.com/ironsource/aws-api-read-stream#readme",
+  "devDependencies": {
+    "ava": "^3.5.2",
+    "aws-sdk": "^2.649.0"
+  }
+}
