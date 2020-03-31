@@ -1,5 +1,5 @@
 # aws-api-read-stream
-Turns an aws api call into a readable stream.
+Turn an aws api call into a readable stream.
 
 ## Install
 ```
