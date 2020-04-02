@@ -29,6 +29,7 @@ async function main() {
     })
 
     // convert the object stream to strings using async generator
+    // (node 13.* and above)
     const transform = async function*(source) {
         for await (const chunk of source) {
             yield JSON.stringify(chunk)
