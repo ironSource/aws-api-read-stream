@@ -42,7 +42,7 @@ async function main() {
 main()
 ```
 
-Keep reading until the stream finishes. This will buffer the results in an internal array
+Keep reading until the stream finishes. This will buffer the results in an internal array, _be wary though, because this might crash the process if it runs out of memory_
 
 ```js
 const aws = require('aws-sdk')
@@ -70,47 +70,21 @@ Provide `Readable` stream options during initialization.
 `objectMode` will always be set to `true`
 
 ```js
-const aws = require('aws-sdk')
-const APIStream = require('aws-api-read-stream')
-const { promisify } = require('util')
-const pipeline = promisify(require('stream').pipeline)
-
-async function main() {
-    const s3 = new aws.S3()
-
-    const s = APIStream.from((nextToken) => {
-        return s3.listObjectsV2({
-            Bucket: 'your-bucket-here',
-            ContinuationToken: nextToken
-        }).promise()
-    }, { options: { ... your options here } })
-
-    const results = await s.readAll()
-}
-
-main()
+const s = APIStream.from((nextToken) => {
+    return s3.listObjectsV2({
+        Bucket: 'your-bucket-here',
+        ContinuationToken: nextToken
+    }).promise()
+}, { options: { ... your options here } })
 ```
 
 Start with an existing `nextToken`
 
 ```js
-const aws = require('aws-sdk')
-const APIStream = require('aws-api-read-stream')
-const { promisify } = require('util')
-const pipeline = promisify(require('stream').pipeline)
-
-async function main() {
-    const s3 = new aws.S3()
-
-    const s = APIStream.from((nextToken) => {
-        return s3.listObjectsV2({
-            Bucket: 'your-bucket-here',
-            ContinuationToken: nextToken
-        }).promise()
-    }, { nextToken: '123123' })
-
-    const results = await s.readAll()
-}
-
-main()
+const s = APIStream.from((nextToken) => {
+    return s3.listObjectsV2({
+        Bucket: 'your-bucket-here',
+        ContinuationToken: nextToken
+    }).promise()
+}, { nextToken: '123123' })
 ```
