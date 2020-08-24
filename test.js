@@ -3,9 +3,7 @@ const AWSApiReadStream = require('./index')
 
 test('AWSApiReadStream', async t => {
 	const testapi = new TestAPI()
-	const stream = new AWSApiReadStream((nextToken) => {
-		return testapi.anAPICall(nextToken)
-	})
+	const stream = AWSApiReadStream.from(nextToken => testapi.anAPICall(nextToken))
 
 	let count = 0
 
@@ -25,6 +23,17 @@ test('AWSApiReadStream', async t => {
 	}
 })
 
+test('AWSApiReadStream - initialize with existing token', async t => {
+	const testapi = new TestAPI()
+
+	let count = 0
+
+	const stream = AWSApiReadStream.from(nextToken => testapi.anAPICall(nextToken), { nextToken: 5 })
+
+	// can't think of a better way to test this other than check internals...
+	t.is(stream._nextToken, 5)
+})
+
 class TestAPI {
 	constructor() {
 		this._counter = 0
@@ -33,7 +42,6 @@ class TestAPI {
 	anAPICall(nextToken) {
 		this.nextTokenSpy = nextToken
 		return new Promise(res => {
-
 			setImmediate(() => {
 				res({
 					data: this._counter,

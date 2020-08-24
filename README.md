@@ -64,3 +64,52 @@ async function main() {
 
 main()
 ```
+
+Provide `Readable` stream options during initialization.
+`objectMode` will always be set to `true`
+
+```js
+const aws = require('aws-sdk')
+const APIStream = require('aws-api-read-stream')
+const { promisify } = require('util')
+const pipeline = promisify(require('stream').pipeline)
+
+async function main() {
+    const s3 = new aws.S3()
+
+    const s = APIStream.from((nextToken) => {
+        return s3.listObjectsV2({
+            Bucket: 'your-bucket-here',
+            ContinuationToken: nextToken
+        }).promise()
+    }, { options: { ... your options here } })
+
+    const results = await s.readAll()
+}
+
+main()
+```
+
+Start with an existing `nextToken`
+
+```js
+const aws = require('aws-sdk')
+const APIStream = require('aws-api-read-stream')
+const { promisify } = require('util')
+const pipeline = promisify(require('stream').pipeline)
+
+async function main() {
+    const s3 = new aws.S3()
+
+    const s = APIStream.from((nextToken) => {
+        return s3.listObjectsV2({
+            Bucket: 'your-bucket-here',
+            ContinuationToken: nextToken
+        }).promise()
+    }, { nextToken: '123123' })
+
+    const results = await s.readAll()
+}
+
+main()
+```

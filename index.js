@@ -1,11 +1,11 @@
 const { Readable, finished } = require('stream')
 
 class AWSApiReadStream extends Readable {
-	constructor(fn, opts) {
+	constructor(fn, opts, nextToken) {
 		super({ ...opts, objectMode: true })
 
 		this._fn = fn
-		this._nextToken = undefined
+		this._nextToken = nextToken
 	}
 
 	async _read(size) {
@@ -33,8 +33,8 @@ class AWSApiReadStream extends Readable {
 		}
 	}
 
-	static from(fn) {
-		return new AWSApiReadStream(fn)
+	static from(fn, { nextToken, options } = {}) {
+		return new AWSApiReadStream(fn, options, nextToken)
 	}
 
 	// can probably come up with a better name...
