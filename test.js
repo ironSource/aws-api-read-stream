@@ -34,6 +34,19 @@ test('AWSApiReadStream - initialize with existing token', async t => {
 	t.is(stream._nextToken, 5)
 })
 
+test('AWSApiReadStream - returning null or undefined will stop execution', async t => {
+	const testapi = new TestAPI()
+	const stream = AWSApiReadStream.from(nextToken => nextToken === 2 ? null : testapi.anAPICall(nextToken))
+
+
+	const results = []
+	for await (const { data, NextToken } of stream) {
+		results.push(data)
+	}
+	t.deepEqual(results, [0, 1])
+})
+
+
 class TestAPI {
 	constructor() {
 		this._counter = 0
