@@ -11,26 +11,33 @@ class AWSApiReadStream extends Readable {
 	async _read(size) {
 		try {
 			const res = await this._fn(this._nextToken)
-			if (this._isInBufferMode()) {
-				this._buffer.push(res)
-			}
+			if (res) {
+				if (this._isInBufferMode()) {
+					this._buffer.push(res)
+				}
 
-			this.push(res)
+				this.push(res)
 
-			if (res && res.NextToken !== undefined) {
-				this._nextToken = res.NextToken
-				return
-			}
+				if (res.NextToken !== undefined) {
+					this._nextToken = res.NextToken
+					return
+				}
 
-			if (res && res.NextContinuationToken !== undefined) {
-				this._nextToken = res.NextContinuationToken
-				return
+				if (res.NextContinuationToken !== undefined) {
+					this._nextToken = res.NextContinuationToken
+					return
+				}
 			}
 
 			this.push(null)
 		} catch (e) {
 			this.destroy(e)
 		}
+	}
+
+	stop() {
+		this._stop = true
+		this.destroy()
 	}
 
 	static from(fn, { nextToken, options } = {}) {
