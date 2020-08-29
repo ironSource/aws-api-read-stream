@@ -46,6 +46,10 @@ test('AWSApiReadStream - returning null or undefined will stop execution', async
 	t.deepEqual(results, [0, 1])
 })
 
+test.skip('AWSApiReadStream - backpressure', async t => {
+
+})
+
 
 class TestAPI {
 	constructor() {

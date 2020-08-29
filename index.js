@@ -9,30 +9,33 @@ class AWSApiReadStream extends Readable {
 	}
 
 	async _read(size) {
-		try {
-			const res = await this._fn(this._nextToken)
-			if (res) {
+		let shouldContinue = false
+		do {
+			try {
+				const res = await this._fn(this._nextToken)
+
+				if (!res) {
+					this.push(null)
+					return
+				}
+
 				if (this._isInBufferMode()) {
 					this._buffer.push(res)
 				}
 
-				this.push(res)
+				shouldContinue = this.push(res)
+				this._nextToken = res.NextToken || res.NextContinuationToken
 
-				if (res.NextToken !== undefined) {
-					this._nextToken = res.NextToken
+				if (!this._nextToken) {
+					this.push(null)
 					return
 				}
 
-				if (res.NextContinuationToken !== undefined) {
-					this._nextToken = res.NextContinuationToken
-					return
-				}
+			} catch (e) {
+				this.destroy(e)
+				return
 			}
-
-			this.push(null)
-		} catch (e) {
-			this.destroy(e)
-		}
+		} while (shouldContinue)
 	}
 
 	stop() {
@@ -45,6 +48,8 @@ class AWSApiReadStream extends Readable {
 	}
 
 	// can probably come up with a better name...
+	// also, not sure if I should also use this.push in _read
+	// while in this mode...
 	readAll() {
 		this._buffer = []
 		return new Promise((res, rej) => {
