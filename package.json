@@ -4,7 +4,7 @@
   "description": "turns an aws api call into a readable stream",
   "main": "index.js",
   "scripts": {
-    "test": "npx ava"
+    "test": "env DEBUG=aws-api-read-stream npx ava"
   },
   "repository": {
     "type": "git",
@@ -25,5 +25,8 @@
   "devDependencies": {
     "ava": "^3.5.2",
     "aws-sdk": "^2.649.0"
+  },
+  "dependencies": {
+    "debug": "^4.1.1"
   }
 }

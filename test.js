@@ -1,5 +1,6 @@
 const test = require('ava')
 const AWSApiReadStream = require('./index')
+const tokens = 'abcdefghij'.split('')
 
 test('AWSApiReadStream', async t => {
 	const testapi = new TestAPI()
@@ -9,35 +10,35 @@ test('AWSApiReadStream', async t => {
 
 	for await (const { data, NextToken } of stream) {
 		t.is(data, count)
-
-		if (count < 10) {
-			t.is(NextToken, count + 1)
-
-			t.is(testapi.nextTokenSpy, count + 1)
-
-		} else {
-			t.is(NextToken, undefined)
-		}
-
 		count++
 	}
+
+	t.deepEqual(testapi.spy, [
+		{ nextToken: undefined, data: 0 },
+		{ nextToken: 'a', data: 1 },
+		{ nextToken: 'b', data: 2 },
+		{ nextToken: 'c', data: 3 },
+		{ nextToken: 'd', data: 4 },
+		{ nextToken: 'e', data: 5 },
+		{ nextToken: 'f', data: 6 },
+		{ nextToken: 'g', data: 7 },
+		{ nextToken: 'h', data: 8 },
+		{ nextToken: 'i', data: 9 },
+		{ nextToken: 'j', data: 10 }
+	])
 })
 
 test('AWSApiReadStream - initialize with existing token', async t => {
 	const testapi = new TestAPI()
-
-	let count = 0
-
-	const stream = AWSApiReadStream.from(nextToken => testapi.anAPICall(nextToken), { nextToken: 5 })
+	const stream = AWSApiReadStream.from(nextToken => testapi.anAPICall(nextToken), { nextToken: 'f' })
 
 	// can't think of a better way to test this other than check internals...
-	t.is(stream._nextToken, 5)
+	t.is(stream._nextToken, 'f')
 })
 
 test('AWSApiReadStream - returning null or undefined will stop execution', async t => {
 	const testapi = new TestAPI()
-	const stream = AWSApiReadStream.from(nextToken => nextToken === 2 ? null : testapi.anAPICall(nextToken))
-
+	const stream = AWSApiReadStream.from(nextToken => nextToken === 'b' ? null : testapi.anAPICall(nextToken))
 
 	const results = []
 	for await (const { data, NextToken } of stream) {
@@ -50,19 +51,19 @@ test.skip('AWSApiReadStream - backpressure', async t => {
 
 })
 
-
 class TestAPI {
 	constructor() {
 		this._counter = 0
+		this.spy = []
 	}
 
 	anAPICall(nextToken) {
-		this.nextTokenSpy = nextToken
+		this.spy.push({ nextToken, data: this._counter })
 		return new Promise(res => {
 			setImmediate(() => {
 				res({
-					data: this._counter,
-					NextToken: this._counter < 10 ? ++this._counter : undefined
+					NextToken: tokens[this._counter],
+					data: this._counter++
 				})
 			})
 		})

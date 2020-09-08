@@ -1,4 +1,9 @@
+const debug = require('debug')('aws-api-read-stream')
 const { Readable, finished } = require('stream')
+
+const STOPPED = 'stopped'
+const READING = 'reading'
+const DONE = 'done'
 
 class AWSApiReadStream extends Readable {
 	constructor(fn, opts, nextToken) {
@@ -6,36 +11,51 @@ class AWSApiReadStream extends Readable {
 
 		this._fn = fn
 		this._nextToken = nextToken
+		this._state = STOPPED
 	}
 
-	async _read(size) {
-		let shouldContinue = false
-		do {
-			try {
-				const res = await this._fn(this._nextToken)
+	_read(size) {
+		if (this._state === READING) return
+		debug('_read', size, 'nextToken', this._nextToken)
+		this._execApiCall()
+	}
 
-				if (!res) {
-					this.push(null)
-					return
-				}
-
-				if (this._isInBufferMode()) {
-					this._buffer.push(res)
-				}
-
-				shouldContinue = this.push(res)
-				this._nextToken = res.NextToken || res.NextContinuationToken
-
-				if (!this._nextToken) {
-					this.push(null)
-					return
-				}
-
-			} catch (e) {
-				this.destroy(e)
+	async _execApiCall() {
+		this._state = READING
+		try {
+			const res = await this._fn(this._nextToken)
+			
+			if (!res) {
+				this._apiExecutionDone()
 				return
 			}
-		} while (shouldContinue)
+
+			if (this._isInBufferMode()) {
+				this._buffer.push(res)
+			}
+
+			this._nextToken = res.NextToken || res.NextContinuationToken
+
+			if (!this._nextToken) {
+				this._apiExecutionDone()
+				return
+			}
+
+			if (!this.push(res)) {
+				this._state = STOPPED
+				return
+			}
+
+			this._execApiCall()
+		} catch (e) {
+			this.destroy(e)
+		}
+	}
+
+	_apiExecutionDone() {
+		this._state = DONE
+		this._nextToken = undefined
+		this.push(null)
 	}
 
 	stop() {
