@@ -1,6 +1,6 @@
 {
   "name": "aws-api-read-stream",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "turns an aws api call into a readable stream",
   "main": "index.js",
   "scripts": {
