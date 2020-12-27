@@ -48,7 +48,21 @@ test('AWSApiReadStream - returning null or undefined will stop execution', async
 })
 
 test.skip('AWSApiReadStream - backpressure', async t => {
+	const testapi = new TestAPI()
 
+	testapi.push = chunk => {
+		testapi.super.push(chunk)
+		return count++ !== 2
+	}
+
+	const stream = AWSApiReadStream.from(nextToken => testapi.anAPICall(nextToken))
+
+	const results = []
+	for await (const { data, NextToken } of stream) {
+		results.push(data)
+	}
+
+	console.log(results)
 })
 
 class TestAPI {
