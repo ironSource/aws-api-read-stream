@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/ironsource/aws-api-read-stream#readme",
   "devDependencies": {
-    "ava": "^3.5.2",
+    "ava": "^5.2.0",
     "aws-sdk": "^2.649.0"
   },
   "dependencies": {
